@@ -77,7 +77,8 @@ class HashedRandomProjection(torch.nn.Module):
             ...
         """
         if torch.cuda.is_available():
-            gpu_devices = [f"cuda:{i}" for i in range(torch.cuda.device_count())]
+            gpu_devices = [
+                f"cuda:{i}" for i in range(torch.cuda.device_count())]
             logger.info(f"Using GPU devices: {gpu_devices}")
         else:
             raise ValueError("GPU is required for multiprocessing.")
@@ -89,12 +90,15 @@ class HashedRandomProjection(torch.nn.Module):
         # loop over each GPU device to create a process
         for device in gpu_devices:
             proc = ctx.Process(
-                target=HashedRandomProjection._mb_worker, 
+                target=HashedRandomProjection._mb_worker,
                 args=(device, self, input_queue, output_queue), daemon=True)
             proc.start()
             processes.append(proc)
         # done and return pool information
-        return {'input': input_queue, 'output': output_queue, 'processes': processes}
+        return {
+            'input': input_queue,
+            'output': output_queue,
+            'processes': processes}
 
     @staticmethod
     def stop_pool(pool: Dict[str, object]):
@@ -107,10 +111,10 @@ class HashedRandomProjection(torch.nn.Module):
         pool['input'].close()
         pool['output'].close()
 
-    def infer(self, 
-              inputs: torch.Tensor, 
-              pool: Dict[str, object], 
-              chunk_size: int=None):
+    def infer(self,
+              inputs: torch.Tensor,
+              pool: Dict[str, object],
+              chunk_size: int = None):
         """ GPU Only! Process inputs in chunks using multiprocessing.
             model_hrp = HashedRandomProjection(...)
             pool = model_hrp.start_pool()
@@ -120,7 +124,8 @@ class HashedRandomProjection(torch.nn.Module):
         """
         # set chunk size
         if chunk_size is None:
-            chunk_size = max(1, inputs.shape[0] // len(pool["processes"]) // 10)
+            chunk_size = max(
+                1, inputs.shape[0] // len(pool["processes"]) // 10)
         if chunk_size < 1:
             raise ValueError("chunk_size must be larger than 0.")
         else:
