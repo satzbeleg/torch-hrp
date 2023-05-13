@@ -6,7 +6,7 @@
 Hashed Random Projection layer for PyTorch.
 
 ## Usage
-<a href="demo/Hashed Random Projections.ipynb">Hashed Random Projections (HRP), binary representations, encoding/decoding for storage</a> (notebook)
+<a href="https://github.com/satzbeleg/torch-hrp/blob/main/demo/Hashed%20Random%20Projections.ipynb">Hashed Random Projections (HRP), binary representations, encoding/decoding for storage</a> (notebook)
 
 
 ### Generate a HRP layer with a new hyperplane
@@ -62,7 +62,9 @@ outputs = layer(inputs)
 
 
 ### Multiprocessing on GPU-Server
-The `HashedRandomProjection` layer has methods for multiprocessing of large numbers of examples for inference purposes (i.e. millions). These methods were adopted from the [SentenceTransformer code](https://github.com/UKPLab/sentence-transformers/blob/d928410803bb90f555926d145ee7ad3bd1373a83/sentence_transformers/SentenceTransformer.py#L206)
+The `HashedRandomProjection` layer has methods for multiprocessing of large numbers of examples for inference purposes (i.e. millions). These methods were adopted from the [SentenceTransformer code](https://github.com/UKPLab/sentence-transformers/blob/d928410803bb90f555926d145ee7ad3bd1373a83/sentence_transformers/SentenceTransformer.py#L206).
+With the following script can be used to figure out how many example fit into the the RAM (e.g. 20 Mio.), 
+and how big the chunk of example for each process can be to fit into the GPU memory (e.g. 4.5 Mio.)
 
 
 ```py
@@ -71,7 +73,7 @@ import torch_hrp as thrp
 
 model_hrp = thrp.HashedRandomProjection(
     output_size=1024,
-    input_size=768,
+    input_size=768,  # the output dimension of the upstream embedding/transformer model
     random_state=42
 )
 
@@ -79,11 +81,12 @@ model_hrp = thrp.HashedRandomProjection(
 if __name__ == '__main__':  # multiprocessing spawning requires main
     x = torch.rand(int(20e6), 768)  # 20 Mio examples
     pool = model_hrp.start_pool()
-    hashed = model_hrp.infer(x, pool, chunk_size=int(45e5))  # chunks of 4,5 Mio examples
+    hashed = model_hrp.infer(x, pool, chunk_size=int(45e5))  # chunks of 4.5 Mio examples
     model_hrp.stop_pool(pool)
     torch.cuda.empty_cache()
 ```
 
+see <a href="https://github.com/satzbeleg/torch-hrp/blob/main/demo/multiprocessing-on-gpu-server.py">demo/multiprocessing-on-gpu-server.py</a>
 
 ## Appendix
 
