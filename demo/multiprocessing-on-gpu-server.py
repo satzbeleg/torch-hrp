@@ -14,6 +14,7 @@ model_hrp = thrp.HashedRandomProjection(
 # requirements
 # 2x GPUs with 80 Gb each (peak 68 Gb)
 # CPU with 300 Gb RAM (peak 180 Gb)
+# 175.793451 seconds
 if __name__ == '__main__':
     x = torch.rand(int(20e6), 768)
     start = timer()
