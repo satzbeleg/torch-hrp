@@ -1,5 +1,12 @@
+import logging
 import torch
-from typing import List
+import torch.multiprocessing as mp
+import queue
+from typing import Dict
+import numpy as np
+
+# start logger
+logger = logging.getLogger(__name__)
 
 
 class HashedRandomProjection(torch.nn.Module):
@@ -61,3 +68,91 @@ class HashedRandomProjection(torch.nn.Module):
         projection = torch.matmul(inputs, self.hyperplane)
         hashvalues = torch.heaviside(projection, torch.tensor(0.0))  # int
         return hashvalues
+
+    def start_pool(self) -> Dict[str, object]:
+        """ GPU Only! Start multiprocessing pool.
+
+            model_hrp = HashedRandomProjection(...)
+            pool = model_hrp.start_pool()
+            ...
+        """
+        if torch.cuda.is_available():
+            gpu_devices = [f"cuda:{i}" for i in range(torch.cuda.device_count())]
+            logger.info(f"Using GPU devices: {gpu_devices}")
+        else:
+            raise ValueError("GPU is required for multiprocessing.")
+        # create queues
+        ctx = mp.get_context('spawn')
+        input_queue = ctx.Queue()
+        output_queue = ctx.Queue()
+        processes = []
+        # loop over each GPU device to create a process
+        for device in gpu_devices:
+            proc = ctx.Process(
+                target=HashedRandomProjection._mb_worker, 
+                args=(device, self, input_queue, output_queue), daemon=True)
+            proc.start()
+            processes.append(proc)
+        # done and return pool information
+        return {'input': input_queue, 'output': output_queue, 'processes': processes}
+
+    @staticmethod
+    def stop_pool(pool: Dict[str, object]):
+        """ GPU Only! Stop multiprocessing pool"""
+        for proc in pool['processes']:
+            proc.terminate()
+        for proc in pool['processes']:
+            proc.join()
+            proc.close()
+        pool['input'].close()
+        pool['output'].close()
+
+    def infer(self, 
+              inputs: torch.Tensor, 
+              pool: Dict[str, object], 
+              chunk_size: int=None):
+        """ GPU Only! Process inputs in chunks using multiprocessing.
+            model_hrp = HashedRandomProjection(...)
+            pool = model_hrp.start_pool()
+            hashed = model_hrp.infer(inputs, pool, chunk_size=32)
+            model_hrp.stop_pool(pool)
+            torch.cuda.empty_cache()
+        """
+        # set chunk size
+        if chunk_size is None:
+            chunk_size = max(1, inputs.shape[0] // len(pool["processes"]) // 10)
+        if chunk_size < 1:
+            raise ValueError("chunk_size must be larger than 0.")
+        else:
+            logger.info(f"Chunk size: {chunk_size}")
+        # send chunks to input queue
+        num_chunks = inputs.shape[0] // chunk_size
+        num_chunks += int((inputs.shape[0] % chunk_size) != 0)
+        input_queue = pool['input']
+        for chunk_id in range(num_chunks):
+            input_queue.put([
+                chunk_id,
+                inputs[chunk_id * chunk_size:(chunk_id + 1) * chunk_size, :]
+            ])
+        # get results from output queue
+        output_queue = pool['output']
+        results_list = sorted([
+            output_queue.get() for _ in range(num_chunks)],
+            key=lambda x: x[0])  # sort by chunk_id
+        # move results to CPU
+        hashvalues = np.concatenate([result[1] for result in results_list])
+        return hashvalues
+
+    @staticmethod
+    def _mb_worker(device: str, model, input_queue, results_queue):
+        """ GPU Only! Worker function for processing a chunk."""
+        while True:
+            try:
+                chunk_id, inputs = input_queue.get()
+                model.to(device)
+                hashvalues = model(inputs.to(device))
+                results_queue.put([
+                    chunk_id, hashvalues.detach().cpu().numpy()])  # to RAM
+                torch.cuda.empty_cache()  # free GPU memory
+            except queue.Empty:
+                break

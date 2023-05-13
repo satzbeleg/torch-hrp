@@ -61,6 +61,30 @@ outputs = layer(inputs)
 ```
 
 
+### Multiprocessing on GPU-Server
+The `HashedRandomProjection` layer has methods for multiprocessing of large numbers of examples for inference purposes (i.e. millions). These methods were adopted from the [SentenceTransformer code](https://github.com/UKPLab/sentence-transformers/blob/d928410803bb90f555926d145ee7ad3bd1373a83/sentence_transformers/SentenceTransformer.py#L206)
+
+
+```py
+import torch
+import torch_hrp as thrp
+
+model_hrp = thrp.HashedRandomProjection(
+    output_size=1024,
+    input_size=768,
+    random_state=42
+)
+
+# Requirements: 2x GPUs w 80 Gb; approx 200 Gb RAM
+if __name__ == '__main__':  # multiprocessing spawning requires main
+    x = torch.rand(int(20e6), 768)  # 20 Mio examples
+    pool = model_hrp.start_pool()
+    hashed = model_hrp.infer(x, pool, chunk_size=int(45e5))  # chunks of 4,5 Mio examples
+    model_hrp.stop_pool(pool)
+    torch.cuda.empty_cache()
+```
+
+
 ## Appendix
 
 ### Installation
@@ -71,7 +95,7 @@ pip install torch-hrp
 pip install git+ssh://git@github.com/satzbeleg/torch-hrp.git
 ```
 
-### Install a virtual environment
+### Install a virtual environment (CPU)
 
 ```sh
 python3 -m venv .venv
@@ -83,6 +107,25 @@ pip install -r requirements-demo.txt --no-cache-dir
 ```
 
 (If your git repo is stored in a folder with whitespaces, then don't use the subfolder `.venv`. Use an absolute path without whitespaces.)
+
+
+### Install with conda (GPU)
+
+```sh
+conda install -y pip
+conda create -y --name gpu-venv-torch-hrp-dev python=3.9 pip
+conda activate gpu-venv-torch-hrp-dev
+
+conda install -y cudatoolkit=11.3.1 cudnn=8.3.2 -c conda-forge
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
+pip install torch==1.12.1+cu113 torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html
+
+# install other packages
+pip install -e .
+# pip install -r requirements.txt --no-cache-dir
+pip install -r requirements-dev.txt --no-cache-dir
+pip install -r requirements-demo.txt --no-cache-dir
+```
 
 ### Python commands
 
