@@ -1,5 +1,6 @@
 import torch
 import torch_hrp as thrp
+from timeit import default_timer as timer
 
 
 # HRP layer
@@ -15,7 +16,9 @@ model_hrp = thrp.HashedRandomProjection(
 # CPU with 300 Gb RAM (peak 180 Gb)
 if __name__ == '__main__':
     x = torch.rand(int(20e6), 768)
+    start = timer()
     pool = model_hrp.start_pool()
     hashed = model_hrp.infer(x, pool, chunk_size=int(45e5))
     model_hrp.stop_pool(pool)
     torch.cuda.empty_cache()
+    print(f"{timer() - start: .6f} seconds")
