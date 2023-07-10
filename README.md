@@ -1,5 +1,6 @@
 [![PyPI version](https://badge.fury.io/py/torch-hrp.svg)](https://badge.fury.io/py/torch-hrp)
 [![PyPi downloads](https://img.shields.io/pypi/dm/torch-hrp)](https://img.shields.io/pypi/dm/torch-hrp)
+[![DOI](https://zenodo.org/badge/638178184.svg)](https://zenodo.org/badge/latestdoi/638178184)
 
 
 # torch-hrp: Hashed Random Projection layer for PyTorch
