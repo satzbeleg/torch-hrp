@@ -2,7 +2,7 @@
 [![PyPi downloads](https://img.shields.io/pypi/dm/torch-hrp)](https://img.shields.io/pypi/dm/torch-hrp)
 
 
-# torch-hrp
+# torch-hrp: Hashed Random Projection layer for PyTorch
 Hashed Random Projection layer for PyTorch.
 
 ## Usage
