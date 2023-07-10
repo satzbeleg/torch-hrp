@@ -6,7 +6,7 @@
 Hashed Random Projection layer for PyTorch.
 
 ## Usage
-<a href="https://github.com/satzbeleg/torch-hrp/blob/main/demo/Hashed%20Random%20Projections.ipynb">Hashed Random Projections (HRP), binary representations, encoding/decoding for storage</a> (notebook)
+<a href="https://github.com/ulf1/torch-hrp/blob/main/demo/Hashed%20Random%20Projections.ipynb">Hashed Random Projections (HRP), binary representations, encoding/decoding for storage</a> (notebook)
 
 
 ### Generate a HRP layer with a new hyperplane
@@ -86,16 +86,16 @@ if __name__ == '__main__':  # multiprocessing spawning requires main
     torch.cuda.empty_cache()
 ```
 
-see <a href="https://github.com/satzbeleg/torch-hrp/blob/main/demo/multiprocessing-on-gpu-server.py">demo/multiprocessing-on-gpu-server.py</a>
+see <a href="https://github.com/ulf1/torch-hrp/blob/main/demo/multiprocessing-on-gpu-server.py">demo/multiprocessing-on-gpu-server.py</a>
 
 ## Appendix
 
 ### Installation
-The `torch-hrp` [git repo](http://github.com/satzbeleg/torch-hrp) is available as [PyPi package](https://pypi.org/project/torch-hrp)
+The `torch-hrp` [git repo](http://github.com/ulf1/torch-hrp) is available as [PyPi package](https://pypi.org/project/torch-hrp)
 
 ```sh
 pip install torch-hrp
-pip install git+ssh://git@github.com/satzbeleg/torch-hrp.git
+pip install git+ssh://git@github.com/ulf1/torch-hrp.git
 ```
 
 ### Install a virtual environment (CPU)
@@ -155,14 +155,18 @@ rm -r .venv
 
 
 ### Support
-Please [open an issue](https://github.com/satzbeleg/torch-hrp/issues/new) for support.
+Please [open an issue](https://github.com/ulf1/torch-hrp/issues/new) for support.
 
 
 ### Contributing
-Please contribute using [Github Flow](https://guides.github.com/introduction/flow/). Create a branch, add commits, and [open a pull request](https://github.com/satzbeleg/torch-hrp/compare/).
+Please contribute using [Github Flow](https://guides.github.com/introduction/flow/). Create a branch, add commits, and [open a pull request](https://github.com/ulf1/torch-hrp/compare/).
 
 ### Acknowledgements
 The "Evidence" project was funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) - [433249742](https://gepris.dfg.de/gepris/projekt/433249742) (GU 798/27-1; GE 1119/11-1).
+
+### Maintenance
+- till 31.Aug.2023 (v0.1.1) the code repository was maintained within the DFG project [433249742](https://gepris.dfg.de/gepris/projekt/433249742)
+- since 01.Sep.2023 (v0.2.0) the code repository is maintained by [@ulf1](https://github.com/ulf1).
 
 ### Citation
 Please cite the arXiv Preprint when using this software for any purpose.

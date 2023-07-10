@@ -24,7 +24,7 @@ setuptools.setup(
     description='Hashed Random Projection layer for PyTorch',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
-    url='http://github.com/satzbeleg/torch-hrp',
+    url='http://github.com/ulf1/torch-hrp',
     author='Ulf Hamster',
     author_email='554c46@gmail.com',
     license='Apache License 2.0',
